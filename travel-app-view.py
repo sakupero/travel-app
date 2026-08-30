@@ -451,7 +451,7 @@ def render_timeline():
             left: 0%;
             right: 2%;
             border-radius: 0.5vw;
-            padding: 0.4vw 0.4vw;
+            padding: 0.8vw 0.2vw;
             font-size: 4vw;
             box-shadow: 0 0.2vw 0.4vw rgba(0,0,0,0.15);
             word-break: break-all;
