@@ -19,7 +19,7 @@ st.markdown("""
         padding-right: 1vw !important;
     }
     html, body, [class*="css"], .stMarkdown, .stText, p, span, div, label, input, button {
-        font-size: 6vw !important;
+        font-size: 4vw !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -436,7 +436,7 @@ def render_timeline():
         .time-label {{
             position: absolute;
             left: -4.5vw;
-            font-size: 5vw;
+            font-size: 3vw;
             color: #6c757d;
         }}
         .time-grid-line {{
@@ -452,7 +452,7 @@ def render_timeline():
             right: 2%;
             border-radius: 0.5vw;
             padding: 0.4vw 0.8vw;
-            font-size: 6vw;
+            font-size: 4vw;
             box-shadow: 0 0.2vw 0.4vw rgba(0,0,0,0.15);
             word-break: break-all;
             white-space: normal;
@@ -473,7 +473,7 @@ def render_timeline():
             right: 2%;
             border-radius: 0.4vw;
             padding: 0.2vw 0.6vw;
-            font-size: 5vw;
+            font-size: 3vw;
             box-shadow: 0 0.1vw 0.3vw rgba(0,0,0,0.2);
             word-break: break-all;
             white-space: normal;
@@ -506,7 +506,7 @@ def render_timeline():
             align-items: center;
             justify-content: center;
             color: #888;
-            font-size: 5vw;
+            font-size: 3vw;
             font-weight: bold;
         }}
         </style>
