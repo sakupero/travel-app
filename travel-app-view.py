@@ -435,7 +435,7 @@ def render_timeline():
         }}
         .time-label {{
             position: absolute;
-            left: -4.5vw;
+            left: -10vw;
             font-size: 3vw;
             color: #6c757d;
         }}
