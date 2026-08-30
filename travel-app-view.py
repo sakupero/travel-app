@@ -448,7 +448,7 @@ def render_timeline():
         }}
         .schedule-block {{
             position: absolute;
-            left: 2%;
+            left: 10%;
             right: 2%;
             border-radius: 0.5vw;
             padding: 0.4vw 0.8vw;
