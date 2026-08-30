@@ -11,6 +11,21 @@ import subprocess
 # ==========================================
 st.set_page_config(page_title="Travel App (View Only)", layout="centered", initial_sidebar_state="collapsed")
 
+st.markdown("""
+    <style>
+    html, body, [class*="css"] {
+        font-size: 1.2vw;
+    }
+    .stButton button {
+        font-size: 1.2vw;
+        border-radius: 0.5vw;
+    }
+    .stTextInput input {
+        font-size: 1.2vw;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # ==========================================
 # スプレッドシート連携関数
 # ==========================================
@@ -371,10 +386,10 @@ def render_timeline():
                 draw_h = 15
                 
             delta_h = draw_h - orig_h
-            extra_px = delta_h * 2
+            extra_vw = delta_h * 0.2
             
-            if extra_px > 0:
-                offset_list.append((e_min, extra_px))
+            if extra_vw > 0:
+                offset_list.append((e_min, extra_vw))
 
     if not df_sub.empty:
         df_sub = df_sub.sort_values(by='開始')
@@ -394,16 +409,16 @@ def render_timeline():
                 draw_h = 15
                 
             delta_h = draw_h - orig_h
-            extra_px = delta_h * 2
+            extra_vw = delta_h * 0.2
             
-            if extra_px > 0:
-                offset_list.append((e_min, extra_px))
+            if extra_vw > 0:
+                offset_list.append((e_min, extra_vw))
 
     offset_list.sort(key=lambda x: x[0])
 
     def get_adjusted_top(minute_val):
-        base_top = minute_val * 2
-        accumulated_offset = sum(px for t, px in offset_list if t <= minute_val)
+        base_top = minute_val * 0.2
+        accumulated_offset = sum(vw for t, vw in offset_list if t <= minute_val)
         return base_top + accumulated_offset
 
     total_container_height = get_adjusted_top(1440)
@@ -412,38 +427,38 @@ def render_timeline():
         <style>
         .timeline-container {{
             position: relative;
-            height: {total_container_height}px;
+            height: {total_container_height}vw;
             background-color: #fcfcfc;
             width: 100%;
-            border-left: 50px solid #e9ecef;
-            border-radius: 5px;
-            margin-top: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5vw solid #e9ecef;
+            border-radius: 0.5vw;
+            margin-top: 1vw;
+            box-shadow: 0 0.2vw 0.5vw rgba(0,0,0,0.05);
         }}
         .time-label {{
             position: absolute;
-            left: -45px;
-            font-size: 12px;
+            left: -4.5vw;
+            font-size: 1.2vw;
             color: #6c757d;
         }}
         .time-grid-line {{
             position: absolute;
             left: 0;
             right: 0;
-            height: 1px;
+            height: 0.1vw;
             background-color: #e0e0e0;
         }}
         .schedule-block {{
             position: absolute;
             left: 2%;
             right: 2%;
-            border-radius: 5px;
-            padding: 4px 8px;
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            border-radius: 0.5vw;
+            padding: 0.4vw 0.8vw;
+            font-size: 1.4vw;
+            box-shadow: 0 0.2vw 0.4vw rgba(0,0,0,0.15);
             word-break: break-all;
             white-space: normal;
-            border-left: 5px solid #444;
+            border-left: 0.5vw solid #444;
         }}
         .schedule-block a {{
             text-decoration: none;
@@ -458,13 +473,13 @@ def render_timeline():
             position: absolute;
             left: 50%;
             right: 2%;
-            border-radius: 4px;
-            padding: 2px 6px;
-            font-size: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            border-radius: 0.4vw;
+            padding: 0.2vw 0.6vw;
+            font-size: 1.2vw;
+            box-shadow: 0 0.1vw 0.3vw rgba(0,0,0,0.2);
             word-break: break-all;
             white-space: normal;
-            border-left: 4px solid #666;
+            border-left: 0.4vw solid #666;
             z-index: 10;
         }}
         .sub-schedule-block a {{
@@ -487,13 +502,13 @@ def render_timeline():
             left: 2%;
             right: 2%;
             background-color: rgba(200, 200, 200, 0.15);
-            border: 2px dashed #bbb;
-            border-radius: 5px;
+            border: 0.2vw dashed #bbb;
+            border-radius: 0.5vw;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #888;
-            font-size: 13px;
+            font-size: 1.3vw;
             font-weight: bold;
         }}
         </style>
@@ -514,8 +529,8 @@ def render_timeline():
     for h in range(25):
         m = h * 60
         top = get_adjusted_top(m)
-        html_content += f'<div class="time-label" style="top: {top-8}px;">{h}:00</div>'
-        html_content += f'<div class="time-grid-line" style="top: {top}px;"></div>'
+        html_content += f'<div class="time-label" style="top: {top-0.8}vw;">{h}:00</div>'
+        html_content += f'<div class="time-grid-line" style="top: {top}vw;"></div>'
 
     occupied_intervals = [] 
 
@@ -548,9 +563,9 @@ def render_timeline():
             sched_id = row['スケジュールナンバー']
             href = f"?detail_id={sched_id}&type=main&travel_id={travel_id}"
             
-            html_content += f'<div id="sched_{sched_id}" class="schedule-block cat-{cat}" style="top: {top}px; height: {height}px;">'
+            html_content += f'<div id="sched_{sched_id}" class="schedule-block cat-{cat}" style="top: {top}vw; height: {height}vw;">'
             html_content += f'<a href="{href}" target="_self">'
-            html_content += f'<div style="font-weight:bold; margin-bottom:2px;">{time_str}</div><div>{title}</div>'
+            html_content += f'<div style="font-weight:bold; margin-bottom:0.2vw;">{time_str}</div><div>{title}</div>'
             html_content += '</a>'
             
             if not df_sub.empty and 'スケジュールナンバー' in df_sub.columns:
@@ -580,7 +595,7 @@ def render_timeline():
                     sub_id = sub_row.get('サブスケジュールナンバー', sub_index)
                     s_href = f"?detail_id={sub_id}&type=sub&travel_id={travel_id}&parent_sched={sched_id}"
                     
-                    html_content += f'<div id="sub_{sub_id}" class="sub-schedule-block cat-{s_cat}" style="top: {sub_top_rel}px; height: {sub_height}px;">'
+                    html_content += f'<div id="sub_{sub_id}" class="sub-schedule-block cat-{s_cat}" style="top: {sub_top_rel}vw; height: {sub_height}vw;">'
                     html_content += f'<a href="{s_href}" target="_self">'
                     html_content += f'<strong>{s_time_str}</strong> {sub_row["サブスケジュールタイトル"]}'
                     html_content += '</a>'
@@ -605,17 +620,17 @@ def render_timeline():
         
         for s, e in merged:
             if s - last_end >= 60: 
-                empty_px = s - last_end
-                empty_min = empty_px // 2
-                html_content += f'<div class="empty-slot" style="top: {last_end}px; height: {empty_px}px;">空き時間 ({empty_min}分)</div>'
+                empty_vw = s - last_end
+                empty_min = int(empty_vw / 0.2)
+                html_content += f'<div class="empty-slot" style="top: {last_end}vw; height: {empty_vw}vw;">空き時間 ({empty_min}分)</div>'
             last_end = e
         if day_end_pos - last_end >= 60:
-            empty_px = day_end_pos - last_end
-            empty_min = empty_px // 2
-            html_content += f'<div class="empty-slot" style="top: {last_end}px; height: {empty_px}px;">空き時間 ({empty_min}分)</div>'
+            empty_vw = day_end_pos - last_end
+            empty_min = int(empty_vw / 0.2)
+            html_content += f'<div class="empty-slot" style="top: {last_end}vw; height: {empty_vw}vw;">空き時間 ({empty_min}分)</div>'
     else:
-        total_px = get_adjusted_top(1440) - get_adjusted_top(0)
-        html_content += f'<div class="empty-slot" style="top: 0px; height: {total_px}px;">空き時間 (24時間)</div>'
+        total_vw = get_adjusted_top(1440) - get_adjusted_top(0)
+        html_content += f'<div class="empty-slot" style="top: 0vw; height: {total_vw}vw;">空き時間 (24時間)</div>'
 
     html_content += '</div>'
     st.markdown(html_content, unsafe_allow_html=True)
