@@ -470,10 +470,10 @@ def render_timeline():
         .sub-schedule-block {{
             position: absolute;
             left: 50%;
-            right: 2%;
+            right: 0%;
             border-radius: 0.4vw;
             padding: 0.2vw 0.6vw;
-            font-size: 3vw;
+            font-size: 2.5vw;
             box-shadow: 0 0.1vw 0.3vw rgba(0,0,0,0.2);
             word-break: break-all;
             white-space: normal;
