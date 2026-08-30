@@ -456,7 +456,7 @@ def render_timeline():
             box-shadow: 0 0.2vw 0.4vw rgba(0,0,0,0.15);
             word-break: break-all;
             white-space: normal;
-            border-left: 0.5vw solid #444;
+            border-left: 0.7vw solid #444;
         }}
         .schedule-block a {{
             text-decoration: none;
