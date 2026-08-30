@@ -448,7 +448,7 @@ def render_timeline():
         }}
         .schedule-block {{
             position: absolute;
-            left: 4%;
+            left: 0%;
             right: 2%;
             border-radius: 0.5vw;
             padding: 0.4vw 0.8vw;
@@ -497,7 +497,7 @@ def render_timeline():
         
         .empty-slot {{
             position: absolute;
-            left: 2%;
+            left: 0%;
             right: 2%;
             background-color: rgba(200, 200, 200, 0.15);
             border: 0.2vw dashed #bbb;
