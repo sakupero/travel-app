@@ -14,14 +14,14 @@ st.set_page_config(page_title="Travel App (View Only)", layout="centered", initi
 st.markdown("""
     <style>
     html, body, [class*="css"] {
-        font-size: 1.2vw;
+        font-size: 3.6vw;
     }
     .stButton button {
-        font-size: 1.2vw;
+        font-size: 3.6vw;
         border-radius: 0.5vw;
     }
     .stTextInput input {
-        font-size: 1.2vw;
+        font-size: 3.6vw;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -425,20 +425,10 @@ def render_timeline():
 
     st.markdown(f"""
         <style>
-        .timeline-container {{
-            position: relative;
-            height: {total_container_height}vw;
-            background-color: #fcfcfc;
-            width: 100%;
-            border-left: 5vw solid #e9ecef;
-            border-radius: 0.5vw;
-            margin-top: 1vw;
-            box-shadow: 0 0.2vw 0.5vw rgba(0,0,0,0.05);
-        }}
         .time-label {{
             position: absolute;
             left: -4.5vw;
-            font-size: 1.2vw;
+            font-size: 3.6vw;
             color: #6c757d;
         }}
         .time-grid-line {{
@@ -454,7 +444,7 @@ def render_timeline():
             right: 2%;
             border-radius: 0.5vw;
             padding: 0.4vw 0.8vw;
-            font-size: 1.4vw;
+            font-size: 4.2vw;
             box-shadow: 0 0.2vw 0.4vw rgba(0,0,0,0.15);
             word-break: break-all;
             white-space: normal;
@@ -475,7 +465,7 @@ def render_timeline():
             right: 2%;
             border-radius: 0.4vw;
             padding: 0.2vw 0.6vw;
-            font-size: 1.2vw;
+            font-size: 3.6vw;
             box-shadow: 0 0.1vw 0.3vw rgba(0,0,0,0.2);
             word-break: break-all;
             white-space: normal;
@@ -508,7 +498,7 @@ def render_timeline():
             align-items: center;
             justify-content: center;
             color: #888;
-            font-size: 1.3vw;
+            font-size: 3.9vw;
             font-weight: bold;
         }}
         </style>
