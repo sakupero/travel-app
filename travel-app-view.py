@@ -435,7 +435,7 @@ def render_timeline():
         }}
         .time-label {{
             position: absolute;
-            left: -10vw;
+            left: -12vw;
             font-size: 3vw;
             color: #6c757d;
         }}
@@ -448,7 +448,7 @@ def render_timeline():
         }}
         .schedule-block {{
             position: absolute;
-            left: 8%;
+            left: 4%;
             right: 2%;
             border-radius: 0.5vw;
             padding: 0.4vw 0.8vw;
