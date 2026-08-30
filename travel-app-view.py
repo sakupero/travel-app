@@ -384,7 +384,7 @@ def render_timeline():
                 draw_h = 15
                 
             delta_h = draw_h - orig_h
-            extra_vw = delta_h * 1
+            extra_vw = delta_h * 0.3
             
             if extra_vw > 0:
                 offset_list.append((e_min, extra_vw))
@@ -415,7 +415,7 @@ def render_timeline():
     offset_list.sort(key=lambda x: x[0])
 
     def get_adjusted_top(minute_val):
-        base_top = minute_val * 1
+        base_top = minute_val * 0.3
         accumulated_offset = sum(vw for t, vw in offset_list if t <= minute_val)
         return base_top + accumulated_offset
 
