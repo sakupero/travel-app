@@ -9,12 +9,17 @@ import subprocess
 # ==========================================
 # 初期設定
 # ==========================================
-st.set_page_config(page_title="Travel App (View Only)", layout="centered", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Travel App (View Only)", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
     <style>
+    .block-container {
+        max-width: 100% !important;
+        padding-left: 1vw !important;
+        padding-right: 1vw !important;
+    }
     html, body, [class*="css"], .stMarkdown, .stText, p, span, div, label, input, button {
-        font-size: 3vw !important;
+        font-size: 1.5vw !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -379,7 +384,7 @@ def render_timeline():
                 draw_h = 15
                 
             delta_h = draw_h - orig_h
-            extra_vw = delta_h * 0.2
+            extra_vw = delta_h * 0.1
             
             if extra_vw > 0:
                 offset_list.append((e_min, extra_vw))
@@ -402,7 +407,7 @@ def render_timeline():
                 draw_h = 15
                 
             delta_h = draw_h - orig_h
-            extra_vw = delta_h * 0.2
+            extra_vw = delta_h * 0.1
             
             if extra_vw > 0:
                 offset_list.append((e_min, extra_vw))
@@ -410,7 +415,7 @@ def render_timeline():
     offset_list.sort(key=lambda x: x[0])
 
     def get_adjusted_top(minute_val):
-        base_top = minute_val * 0.2
+        base_top = minute_val * 0.1
         accumulated_offset = sum(vw for t, vw in offset_list if t <= minute_val)
         return base_top + accumulated_offset
 
@@ -418,10 +423,20 @@ def render_timeline():
 
     st.markdown(f"""
         <style>
+        .timeline-container {{
+            position: relative;
+            height: {total_container_height}vw;
+            background-color: #fcfcfc;
+            width: 100%;
+            border-left: 5vw solid #e9ecef;
+            border-radius: 0.5vw;
+            margin-top: 1vw;
+            box-shadow: 0 0.2vw 0.5vw rgba(0,0,0,0.05);
+        }}
         .time-label {{
             position: absolute;
             left: -4.5vw;
-            font-size: 3.6vw;
+            font-size: 1.5vw;
             color: #6c757d;
         }}
         .time-grid-line {{
@@ -437,7 +452,7 @@ def render_timeline():
             right: 2%;
             border-radius: 0.5vw;
             padding: 0.4vw 0.8vw;
-            font-size: 4.2vw;
+            font-size: 1.5vw;
             box-shadow: 0 0.2vw 0.4vw rgba(0,0,0,0.15);
             word-break: break-all;
             white-space: normal;
@@ -458,7 +473,7 @@ def render_timeline():
             right: 2%;
             border-radius: 0.4vw;
             padding: 0.2vw 0.6vw;
-            font-size: 3.6vw;
+            font-size: 1.3vw;
             box-shadow: 0 0.1vw 0.3vw rgba(0,0,0,0.2);
             word-break: break-all;
             white-space: normal;
@@ -491,7 +506,7 @@ def render_timeline():
             align-items: center;
             justify-content: center;
             color: #888;
-            font-size: 3.9vw;
+            font-size: 1.4vw;
             font-weight: bold;
         }}
         </style>
@@ -604,12 +619,12 @@ def render_timeline():
         for s, e in merged:
             if s - last_end >= 60: 
                 empty_vw = s - last_end
-                empty_min = int(empty_vw / 0.2)
+                empty_min = int(empty_vw / 0.1)
                 html_content += f'<div class="empty-slot" style="top: {last_end}vw; height: {empty_vw}vw;">空き時間 ({empty_min}分)</div>'
             last_end = e
         if day_end_pos - last_end >= 60:
             empty_vw = day_end_pos - last_end
-            empty_min = int(empty_vw / 0.2)
+            empty_min = int(empty_vw / 0.1)
             html_content += f'<div class="empty-slot" style="top: {last_end}vw; height: {empty_vw}vw;">空き時間 ({empty_min}分)</div>'
     else:
         total_vw = get_adjusted_top(1440) - get_adjusted_top(0)
