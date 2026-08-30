@@ -13,14 +13,7 @@ st.set_page_config(page_title="Travel App (View Only)", layout="centered", initi
 
 st.markdown("""
     <style>
-    html, body, [class*="css"] {
-        font-size: 3.6vw;
-    }
-    .stButton button {
-        font-size: 3.6vw;
-        border-radius: 0.5vw;
-    }
-    .stTextInput input {
+    .stMarkdown, .stText, p {
         font-size: 3.6vw;
     }
     </style>
