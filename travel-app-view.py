@@ -428,7 +428,7 @@ def render_timeline():
             height: {total_container_height}vw;
             background-color: #fcfcfc;
             width: 100%;
-            border-left: 5vw solid #e9ecef;
+            border-left: 15vw solid #e9ecef;
             border-radius: 0.5vw;
             margin-top: 1vw;
             box-shadow: 0 0.2vw 0.5vw rgba(0,0,0,0.05);
@@ -448,7 +448,7 @@ def render_timeline():
         }}
         .schedule-block {{
             position: absolute;
-            left: 10%;
+            left: 8%;
             right: 2%;
             border-radius: 0.5vw;
             padding: 0.4vw 0.8vw;
