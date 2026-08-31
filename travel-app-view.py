@@ -851,32 +851,39 @@ if "travel_id" in st.query_params and "detail_id" not in st.query_params and st.
     st.rerun()
 
 if "detail_id" in st.query_params:
-    st.markdown('<script>console.log("2");</script>', unsafe_allow_html=True)
     st.session_state.detail_id = st.query_params["detail_id"]
     st.session_state.detail_type = st.query_params.get("type", "main")
-    st.session_state.selected_travel_id = st.query_params.get("travel_id2", None)
-    st.session_state.detail_parent_sched = st.query_params.get("parent_sched", None)
-    st.session_state.current_page = 'schedule_detail'
+    travel_id2 = st.query_params.get("travel_id2")
 
-    # 現在の travel_id を取得
+    try:
+        travel_id2 = int(float(travel_id2)) if travel_id2 is not None else None
+    except (TypeError, ValueError):
+        travel_id2 = None
+
+    st.session_state.selected_travel_id = travel_id2
+    st.session_state.detail_travel_id = travel_id2
+
+    st.session_state.detail_parent_sched = st.query_params.get("parent_sched")
+    st.session_state.current_page = "schedule_detail"
+
+    # ↑ st.session_state.current_page = "schedule_detail" の直後に入れる
     travel_id = st.query_params.get("travel_id")
 
-    # travel_id が存在し、他のパラメーターも存在する場合だけ置き換える
-    if travel_id is not None:
-        current_keys = set(st.query_params.keys())
+    if travel_id is not None and set(st.query_params.keys()) != {"travel_id"}:
+        st.query_params.from_dict({
+            "travel_id": travel_id
+        })
+        st.rerun()
 
-        if current_keys != {"travel_id"}:
-            st.query_params.from_dict({
-                "travel_id": travel_id
-            })
-            st.rerun()
+# この下には、無条件の st.rerun() を置かない
 
-if st.session_state.current_page == 'start':
-    render_start()
-elif st.session_state.current_page == 'day_list':
+if st.session_state.current_page == "start":
+    st.error("start画面に戻りました。URLまたはsession_stateを確認してください。")
+elif st.session_state.current_page == "day_list":
     render_day_list()
-elif st.session_state.current_page == 'timeline':
+elif st.session_state.current_page == "timeline":
     render_timeline()
-elif st.session_state.current_page == 'schedule_detail':
+elif st.session_state.current_page == "schedule_detail":
     render_schedule_detail()
+
 # 編集・新規登録・メンバー登録などの関数呼び出し（および対応するrender関数自体）を完全に削除しました
