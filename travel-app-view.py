@@ -843,8 +843,9 @@ if "detail_id" in st.query_params:
     st.session_state.detail_id = st.query_params["detail_id"]
     st.session_state.detail_type = st.query_params.get("type", "main")
     st.session_state.selected_travel_id = st.query_params.get("travel_id2", None)
-    st.write("DEBUG selected_travel_id:", st.session_state.selected_travel_id)
-    st.write("DEBUG query_params:", dict(st.query_params))
+    st.session_state.detail_id = st.query_params["detail_id"]
+    st.session_state.detail_type = st.query_params.get("type", "main")
+    st.session_state.selected_travel_id = st.query_params.get("travel_id2", None)
     st.stop()
     st.session_state.current_page = 'schedule_detail'
     st.markdown("""
