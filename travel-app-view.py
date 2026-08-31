@@ -559,7 +559,11 @@ def render_timeline():
             time_str = f"{start.strftime('%H:%M')} - {end.strftime('%H:%M')}"
             
             sched_id = row['スケジュールナンバー']
-            href = f"?detail_id={sched_id}&type=main&travel_id={travel_id}"
+            # 現在のURLから travel_id を取得する（なければそのまま空文字やデフォルトに）
+            current_travel = st.query_params.get("travel_id", "")
+
+            # 取得した travel_id を含めた状態で href を組み立てる
+            href = f"?travel_id={current_travel}&detail_id={sched_id}&type=main&travel_id2={travel_id}"
             
             html_content += f'<div id="sched_{sched_id}" class="schedule-block cat-{cat}" style="top: {top}vw; height: {height}vw;">'
             html_content += f'<a href="{href}" target="_self">'
@@ -591,10 +595,15 @@ def render_timeline():
                     s_time_str = f"{s_start.strftime('%H:%M')}-{s_end.strftime('%H:%M')}"
                     
                     sub_id = sub_row.get('サブスケジュールナンバー', sub_index)
-                    s_href = f"?detail_id={sub_id}&type=sub&travel_id={travel_id}&parent_sched={sched_id}"
+
+                    # 現在のURLから travel_id を取得する（なければそのまま空文字やデフォルトに）
+                    current_travel = st.query_params.get("travel_id", "")
+
+                    # 取得した travel_id を含めた状態で href を組み立てる
+                    href = f"?travel_id={current_travel}&detail_id={sub_id}&type=sub&travel_id2={travel_id}&parent_sched={sched_id}"
                     
                     html_content += f'<div id="sub_{sub_id}" class="sub-schedule-block cat-{s_cat}" style="top: {sub_top_rel}vw; height: {sub_height}vw;">'
-                    html_content += f'<a href="{s_href}" target="_self">'
+                    html_content += f'<a href="{href}" target="_self">'
                     html_content += f'<strong>{s_time_str}</strong> {sub_row["サブスケジュールタイトル"]}'
                     html_content += '</a>'
                     html_content += '</div>'
@@ -830,32 +839,40 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, "-m", "streamlit", "run", script_path])
         sys.exit(0)
 
-if "travel_id" in st.query_params and "detail_id" not in st.query_params:
+if "travel_id" in st.query_params and "detail_id" not in st.query_params and st.session_state.get('selected_travel_id') is None:
+    st.markdown('<script>console.log("1");</script>', unsafe_allow_html=True)
     try:
         encoded_travel = st.query_params["travel_id"]
         st.session_state.selected_travel_id = int(int(encoded_travel, 16) / 333)
     except ValueError:
         st.session_state.selected_travel_id = None
     st.session_state.current_page = 'day_list'
-    st.query_params.clear()
+    #st.query_params.clear()
     st.rerun()
 
 if "detail_id" in st.query_params:
+    st.markdown('<script>console.log("2");</script>', unsafe_allow_html=True)
     st.session_state.detail_id = st.query_params["detail_id"]
     st.session_state.detail_type = st.query_params.get("type", "main")
-    encoded_travel = st.query_params.get("travel_id", None)
-    if encoded_travel:
-        try:
-            st.session_state.detail_travel_id = int(int(encoded_travel, 16) / 333)
-        except ValueError:
-            st.session_state.detail_travel_id = None
-    else:
-        st.session_state.detail_travel_id = None
+    st.session_state.selected_travel_id = st.query_params.get("travel_id2", None)
     st.session_state.detail_parent_sched = st.query_params.get("parent_sched", None)
-    if st.session_state.detail_travel_id:
-        st.session_state.selected_travel_id = int(st.session_state.detail_travel_id)
     st.session_state.current_page = 'schedule_detail'
-    st.query_params.clear()
+
+    # 現在の travel_id を取得
+    travel_id = st.query_params.get("travel_id")
+
+    # travel_id が存在し、他のパラメーターも存在する場合だけ置き換える
+    if travel_id is not None:
+        current_keys = set(st.query_params.keys())
+
+        if current_keys != {"travel_id"}:
+            st.query_params.from_dict({
+                "travel_id": travel_id
+            })
+            st.rerun()
+
+    st.write("travel_id:", travel_id)
+
     st.rerun()
 
 if st.session_state.current_page == 'start':
