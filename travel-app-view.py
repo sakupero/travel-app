@@ -559,7 +559,7 @@ def render_timeline():
             time_str = f"{start.strftime('%H:%M')} - {end.strftime('%H:%M')}"
             
             sched_id = row['スケジュールナンバー']
-            href = f"?detail_id={sched_id}&type=main&travel_id2={travel_id}"
+            href = f"?detail_id={sched_id}&type=main&travel_id={travel_id}"
             
             html_content += f'<div id="sched_{sched_id}" class="schedule-block cat-{cat}" style="top: {top}vw; height: {height}vw;">'
             html_content += f'<a href="{href}" target="_self">'
@@ -591,7 +591,7 @@ def render_timeline():
                     s_time_str = f"{s_start.strftime('%H:%M')}-{s_end.strftime('%H:%M')}"
                     
                     sub_id = sub_row.get('サブスケジュールナンバー', sub_index)
-                    s_href = f"?detail_id={sub_id}&type=sub&travel_id2={travel_id}&parent_sched={sched_id}"
+                    s_href = f"?detail_id={sub_id}&type=sub&travel_id={travel_id}&parent_sched={sched_id}"
                     
                     html_content += f'<div id="sub_{sub_id}" class="sub-schedule-block cat-{s_cat}" style="top: {sub_top_rel}vw; height: {sub_height}vw;">'
                     html_content += f'<a href="{s_href}" target="_self">'
@@ -831,7 +831,6 @@ if __name__ == "__main__":
         sys.exit(0)
 
 if "travel_id" in st.query_params and "detail_id" not in st.query_params:
-    st.markdown('<script>console.log("1");</script>', unsafe_allow_html=True)
     try:
         encoded_travel = st.query_params["travel_id"]
         st.session_state.selected_travel_id = int(int(encoded_travel, 16) / 333)
@@ -844,29 +843,19 @@ if "travel_id" in st.query_params and "detail_id" not in st.query_params:
 if "detail_id" in st.query_params:
     st.session_state.detail_id = st.query_params["detail_id"]
     st.session_state.detail_type = st.query_params.get("type", "main")
-    st.session_state.selected_travel_id = st.query_params.get("travel_id2", None)
-    st.session_state.detail_id = st.query_params["detail_id"]
-    st.markdown("""
-        <script>
-        console.log("DEBUG current URL:", window.location.href);
-        console.log("DEBUG query params:", window.location.search);
-        </script>
-    """, unsafe_allow_html=True)
-    st.stop()
+    encoded_travel = st.query_params.get("travel_id", None)
+    if encoded_travel:
+        try:
+            st.session_state.detail_travel_id = int(int(encoded_travel, 16) / 333)
+        except ValueError:
+            st.session_state.detail_travel_id = None
+    else:
+        st.session_state.detail_travel_id = None
+    st.session_state.detail_parent_sched = st.query_params.get("parent_sched", None)
+    if st.session_state.detail_travel_id:
+        st.session_state.selected_travel_id = int(st.session_state.detail_travel_id)
     st.session_state.current_page = 'schedule_detail'
-    st.markdown("""
-        <script>
-        const fullUrl = window.location.href;
-        const firstQ = fullUrl.indexOf('?');
-        if (firstQ !== -1) {
-            const secondQ = fullUrl.indexOf('?', firstQ + 1);
-            if (secondQ !== -1) {
-                const cleanUrl = fullUrl.substring(0, secondQ);
-                window.history.replaceState({}, document.title, cleanUrl);
-            }
-        }
-        </script>
-    """, unsafe_allow_html=True)
+    st.query_params.clear()
     st.rerun()
 
 if st.session_state.current_page == 'start':
