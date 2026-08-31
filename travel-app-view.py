@@ -830,7 +830,7 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, "-m", "streamlit", "run", script_path])
         sys.exit(0)
 
-if "travel_id" in st.query_params and "detail_id" not in st.query_params and st.session_state.get('selected_travel_id') is None:
+if "travel_id" in st.query_params and "detail_id" not in st.query_params:
     st.markdown('<script>console.log("1");</script>', unsafe_allow_html=True)
     try:
         encoded_travel = st.query_params["travel_id"]
