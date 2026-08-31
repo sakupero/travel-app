@@ -724,10 +724,28 @@ def render_schedule_detail():
 
         # 編集ボタンを一切排除し、戻るボタンのみ配置
         if st.button("← タイムラインへ戻る", use_container_width=True):
-            st.session_state.detail_id = None
-            prefix = "sched" if detail_type == 'main' else "sub"
+            detail_id = st.session_state.get("detail_id")
+            detail_type = st.session_state.get("detail_type", "main")
+
+            prefix = "sched" if detail_type == "main" else "sub"
             st.session_state.scroll_target = f"{prefix}_{detail_id}"
-            navigate_to('timeline')
+
+            # 詳細情報をsession_stateから削除
+            st.session_state.detail_id = None
+            st.session_state.detail_type = None
+            st.session_state.detail_parent_sched = None
+
+            # travel_idだけをURLに残す
+            travel_id = st.query_params.get("travel_id")
+            if travel_id:
+                st.query_params.from_dict({
+                    "travel_id": travel_id
+                })
+
+            # URL整理後はタイムラインへ変更
+            st.session_state.current_page = "timeline"
+            st.rerun()
+
 
         summary = row.get('概要', '（登録されていません）')
         raw_url = str(row.get('URL', ''))
@@ -867,13 +885,13 @@ if "detail_id" in st.query_params:
     st.session_state.current_page = "schedule_detail"
 
     # ↑ st.session_state.current_page = "schedule_detail" の直後に入れる
-    travel_id = st.query_params.get("travel_id")
+    #travel_id = st.query_params.get("travel_id")
 
-    if travel_id is not None and set(st.query_params.keys()) != {"travel_id"}:
-        st.query_params.from_dict({
-            "travel_id": travel_id
-        })
-        st.rerun()
+    #if travel_id is not None and set(st.query_params.keys()) != {"travel_id"}:
+    #    st.query_params.from_dict({
+    #        "travel_id": travel_id
+    #    })
+    #    st.rerun()
 
 # この下には、無条件の st.rerun() を置かない
 
