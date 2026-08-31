@@ -845,24 +845,18 @@ if "detail_id" in st.query_params:
     st.session_state.selected_travel_id = st.query_params.get("travel_id2", None)
     st.session_state.current_page = 'schedule_detail'
     st.markdown("""
-    <script>
-    const url = new URL(window.location.href);
-    
-    // travel_id は保持したまま、不要になった2個目以降のパラメータ（detail_idなど）を削る例
-    if (url.searchParams.has('detail_id') || url.searchParams.has('type')) {
-        const travelId = url.searchParams.get('travel_id');
-        let cleanUrl = url.pathname;
-        
-        // travel_id が存在する場合はそれだけを綺麗に復元する
-        if (travelId) {
-            cleanUrl += '?travel_id=' + travelId;
+        <script>
+        const fullUrl = window.location.href;
+        const firstQ = fullUrl.indexOf('?');
+        if (firstQ !== -1) {
+            const secondQ = fullUrl.indexOf('?', firstQ + 1);
+            if (secondQ !== -1) {
+                const cleanUrl = fullUrl.substring(0, secondQ);
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
         }
-        
-        // リロードを発生させずにブラウザのURLだけを即座に書き換える
-        window.history.replaceState({}, document.title, cleanUrl);
-    }
-    </script>
-""", unsafe_allow_html=True)
+        </script>
+    """, unsafe_allow_html=True)
     st.rerun()
 
 if st.session_state.current_page == 'start':
