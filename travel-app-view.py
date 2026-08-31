@@ -871,10 +871,6 @@ if "detail_id" in st.query_params:
             })
             st.rerun()
 
-    st.write("travel_id:", travel_id)
-
-    st.rerun()
-
 if st.session_state.current_page == 'start':
     render_start()
 elif st.session_state.current_page == 'day_list':
