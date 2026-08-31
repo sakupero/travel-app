@@ -838,6 +838,7 @@ if "travel_id" in st.query_params and "detail_id" not in st.query_params:
     except ValueError:
         st.session_state.selected_travel_id = None
     st.session_state.current_page = 'day_list'
+    st.query_params.clear()
     st.rerun()
 
 if "detail_id" in st.query_params:
