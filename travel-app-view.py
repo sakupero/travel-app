@@ -20,6 +20,7 @@ st.markdown("""
     }
     html, body, [class*="css"], .stMarkdown, .stText, p, span, div, label, input, button {
         font-size: 4vw !important;
+        color: #333333 !important;
     }
     </style>
 """, unsafe_allow_html=True)
