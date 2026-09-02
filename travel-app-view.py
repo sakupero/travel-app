@@ -311,7 +311,7 @@ def render_timeline():
                             sub_n_int = int(float(sub_num))
                             s_n_int = int(float(s_num))
                             if not df_sub_all.empty:
-                                sub_match = df_sub_all[(df_sub_all['スケジュールナンバー'] == s_n_int) & (df_sub_all['サブスケジュールナンバー'] == sub_n_int)]
+                                sub_match = df_sub_all[(df_sub_all['トラベルナンバー'] == travel_id) & (df_sub_all['スケジュールナンバー'] == s_n_int) & (df_sub_all['サブスケジュールナンバー'] == sub_n_int)]
                                 if not sub_match.empty:
                                     title = sub_match.iloc[0].get('サブスケジュールタイトル', 'タイトルなし')
                                     start_time = str(sub_match.iloc[0].get('サブスケジュール開始時間', '99:99'))
@@ -321,7 +321,7 @@ def render_timeline():
                         try:
                             s_n_int = int(float(s_num))
                             if not df_sched_all.empty:
-                                sched_match = df_sched_all[df_sched_all['スケジュールナンバー'] == s_n_int]
+                                sched_match = df_sched_all[(df_sched_all['トラベルナンバー'] == travel_id) & (df_sched_all['スケジュールナンバー'] == s_n_int)]
                                 if not sched_match.empty:
                                     title = sched_match.iloc[0].get('スケジュールタイトル', 'タイトルなし')
                                     start_time = str(sched_match.iloc[0].get('スケジュール開始時間', '99:99'))
