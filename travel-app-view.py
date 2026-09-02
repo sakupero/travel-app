@@ -380,14 +380,20 @@ def render_timeline():
             e_min = end_clip.hour * 60 + end_clip.minute
             
             orig_h = max(0, e_min - s_min)
+            if orig_h == 0:
+                e_min += 1
+                orig_h = 1
+                
             draw_h = orig_h
-            if draw_h < 10:
-                draw_h = 15
+            if draw_h < 20:
+                draw_h = 20
                 
             delta_h = draw_h - orig_h
             extra_vw = delta_h * 0.5
             
             if extra_vw > 0:
+                title = row.get('スケジュールタイトル', 'タイトルなし')
+                print(f"[DEBUG MAIN] '{title}' | 終了(分): {e_min} | 追加幅(vw): {extra_vw}")
                 offset_list.append((e_min, extra_vw))
 
     if not df_sub.empty:
@@ -403,17 +409,25 @@ def render_timeline():
             e_min = end_clip.hour * 60 + end_clip.minute
             
             orig_h = max(0, e_min - s_min)
+            if orig_h == 0:
+                e_min += 1
+                orig_h = 1
+                
             draw_h = orig_h
-            if draw_h < 10:
-                draw_h = 15
+            if draw_h < 20:
+                draw_h = 20
                 
             delta_h = draw_h - orig_h
-            extra_vw = delta_h * 0.1
+            extra_vw = delta_h * 0.5
             
             if extra_vw > 0:
+                title = row.get('サブスケジュールタイトル', 'タイトルなし')
+                print(f"[DEBUG SUB] '{title}' | 終了(分): {e_min} | 追加幅(vw): {extra_vw}")
                 offset_list.append((e_min, extra_vw))
 
     offset_list.sort(key=lambda x: x[0])
+    print(f"[DEBUG TIMELINE] 24時までのオフセット一覧: {offset_list}")
+    print(f"[DEBUG TIMELINE] 24時までの内部保持オフセットデータ一覧 (時刻(分), 累積/各ズレ幅vw): {offset_list}")
 
     def get_adjusted_top(minute_val):
         base_top = minute_val * 0.5
@@ -452,8 +466,9 @@ def render_timeline():
             left: 0%;
             right: 0%;
             border-radius: 0.5vw;
-            padding: 0.4vw 0.2vw;
+            padding: 0.8vw 0.6vw;
             font-size: 4vw;
+            line-height: 1;
             box-shadow: 0 0.2vw 0.4vw rgba(0,0,0,0.15);
             word-break: break-all;
             white-space: normal;
@@ -473,8 +488,9 @@ def render_timeline():
             left: 50%;
             right: 0%;
             border-radius: 0.4vw;
-            padding: 0.2vw 0.6vw;
+            padding: 0.6vw 0.8vw;
             font-size: 2.5vw;
+            line-height: 1;
             box-shadow: 0 0.1vw 0.3vw rgba(0,0,0,0.2);
             word-break: break-all;
             white-space: normal;
@@ -545,12 +561,16 @@ def render_timeline():
             e_min = end_clip.hour * 60 + end_clip.minute
             
             orig_h = max(0, e_min - s_min)
+            if orig_h == 0:
+                e_min += 1
+                orig_h = 1
+                
             draw_h = orig_h
-            if draw_h < 10:
-                draw_h = 15
+            if draw_h < 20:
+                draw_h = 20
             
             top = get_adjusted_top(s_min)
-            bottom = get_adjusted_top(s_min + draw_h)
+            bottom = get_adjusted_top(e_min)
             height = bottom - top
             
             occupied_intervals.append((top, bottom))
@@ -582,13 +602,18 @@ def render_timeline():
                     
                     sub_s_min = s_start_clip.hour * 60 + s_start_clip.minute
                     sub_e_min = s_end_clip.hour * 60 + s_end_clip.minute
+                    
                     sub_orig_h = max(0, sub_e_min - sub_s_min)
+                    if sub_orig_h == 0:
+                        sub_e_min += 1
+                        sub_orig_h = 1
+                        
                     sub_draw_h = sub_orig_h
-                    if sub_draw_h < 10:
-                        sub_draw_h = 15
+                    if sub_draw_h < 20:
+                        sub_draw_h = 20
                         
                     sub_top_abs = get_adjusted_top(sub_s_min)
-                    sub_bottom_abs = get_adjusted_top(sub_s_min + sub_draw_h)
+                    sub_bottom_abs = get_adjusted_top(sub_e_min)
                     sub_top_rel = sub_top_abs - top
                     sub_height = sub_bottom_abs - sub_top_abs
                     
