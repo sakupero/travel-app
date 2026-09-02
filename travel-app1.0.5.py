@@ -9,7 +9,6 @@ import subprocess
 # ==========================================
 # 初期設定
 # ==========================================
-# スマホ閲覧を意識し、サイドバーは初期状態で閉じる設定にします
 st.set_page_config(page_title="Travel App", layout="centered", initial_sidebar_state="collapsed")
 
 # ==========================================
@@ -18,7 +17,6 @@ st.set_page_config(page_title="Travel App", layout="centered", initial_sidebar_s
 @st.cache_resource
 def get_gspread_client():
     """スプレッドシートAPIクライアントを初期化してキャッシュする"""
-    # secrets.tomlから認証情報を取得
     credentials = Credentials.from_service_account_info(
         st.secrets["gcp_service_account"],
         scopes=[
@@ -28,12 +26,11 @@ def get_gspread_client():
     )
     return gspread.authorize(credentials)
 
-@st.cache_data(ttl=600) # 10分間データをキャッシュ（通信回数削減のため）
+@st.cache_data(ttl=600)
 def load_data(sheet_name):
     """指定したシート名のデータをDataFrameとして読み込む"""
     try:
         client = get_gspread_client()
-        # secrets.tomlからスプレッドシートIDを取得して開く
         sh = client.open_by_key(st.secrets["spreadsheet"]["spreadsheet_id"])
         worksheet = sh.worksheet(sheet_name)
         data = worksheet.get_all_records()
@@ -42,21 +39,15 @@ def load_data(sheet_name):
         st.error(f"データの読み込みに失敗しました: {e}")
         return pd.DataFrame()
 
-# データを更新する際は、キャッシュをクリアする必要があります
 def clear_cache():
     st.cache_data.clear()
 
 # ==========================================
 # 状態管理 (Session State)
 # ==========================================
-if 'is_shared_view' not in st.session_state:
-    st.session_state.is_shared_view = False
-
-# どの画面を表示しているかを管理する変数
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'start'
 
-# 選択された年や旅行IDを保持する変数
 if 'selected_year' not in st.session_state:
     st.session_state.selected_year = None
 if 'selected_travel_id' not in st.session_state:
@@ -66,11 +57,6 @@ if 'selected_date' not in st.session_state:
 
 def navigate_to(page_name):
     """画面遷移用関数"""
-    if st.session_state.is_shared_view:
-        allowed_pages = ['day_list', 'timeline', 'schedule_detail']
-        if page_name not in allowed_pages:
-            st.warning("共有（閲覧専用）モードではこの操作は許可されていません。")
-            return
     st.session_state.current_page = page_name
     st.rerun()
 
@@ -173,43 +159,29 @@ def render_day_list():
     
     if df_travel.empty or travel_id not in df_travel['トラベルナンバー'].values:
         st.error("旅行データが見つかりません。")
-        if not st.session_state.is_shared_view:
-            if st.button("← 旅行一覧へ戻る"):
-                st.session_state.selected_travel_id = None
-                navigate_to('travel_list')
+        if st.button("← 旅行一覧へ戻る"):
+            st.session_state.selected_travel_id = None
+            navigate_to('travel_list')
         return
         
     travel_row = df_travel[df_travel['トラベルナンバー'] == travel_id].iloc[0]
     st.title(f"{travel_row['タイトル']} - 日一覧")
     
-    # 共有モード時は戻るボタンや登録ボタンを隠す
-    if not st.session_state.is_shared_view:
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            if st.button("← 旅行一覧へ戻る"):
-                st.session_state.selected_travel_id = None
-                navigate_to('travel_list')
-        with col2:
-            if st.button("メンバー登録", use_container_width=True):
-                navigate_to('register_member')
-        with col3:
-            if st.button("日程変更", type="primary", use_container_width=True):
-                st.warning("日程変更機能は未実装です")
-        with col4:
-            if st.button("🔗 共有URL発行", use_container_width=True):
-                st.session_state.show_share_modal = True
-                
-        # 共有URL発行用の表示エリア
-        if st.session_state.get('show_share_modal', False):
-            # 現在のアプリのベースURL（QueryParamsを除いたもの、またはホスト名）を取得
-            base_url = st.get_option("server.baseUrlPath") or ""
-            # Streamlit Community Cloud等で動いている場合の現在のURLを取得する簡易的な仕組み
-            # クエリパラメータ付きのURLを生成
-            current_url = window_location_url = f"{st.context.headers.get('Origin', '')}/?view_travel={travel_id}"
-            st.info("👇 以下のURLをコピーしてメンバーに共有してください（閲覧専用）")
-            st.code(current_url, language="text")
-    else:
-        st.info("📌 メンバー閲覧専用モードで表示しています。")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("← 旅行一覧へ戻る"):
+            st.session_state.selected_travel_id = None
+            navigate_to('travel_list')
+    with col2:
+        if st.button("メンバー登録", use_container_width=True):
+            navigate_to('register_member')
+    with col3:
+        if st.button("日程変更", type="primary", use_container_width=True):
+            st.warning("日程変更機能は未実装です")
+            
+    encoded_id = hex(int(travel_id) * 333)[2:]
+    view_url = f"https://travel-app-9miv6xmrh5dwzrjzvqyb2a.streamlit.app/?travel_id={encoded_id}"
+    st.text_input("閲覧専用URL（コピーして共有してください）", value=view_url)
             
     # --- 旅行全体の金額集計処理 ---
     df_money = load_data('Money')
@@ -218,9 +190,9 @@ def render_day_list():
     df_member = load_data('Member')
     
     total_travel_money = 0
-    daily_summary = {}   # {日付文字列: 金額}
-    member_summary = {}  # {メンバー名: 金額}
-    cat_summary = {      # {分類名: 金額}
+    daily_summary = {}   
+    member_summary = {}  
+    cat_summary = {      
         '移動': 0,
         '活動': 0,
         '食事': 0,
@@ -437,7 +409,7 @@ def render_timeline():
                             sub_n_int = int(float(sub_num))
                             s_n_int = int(float(s_num))
                             if not df_sub_all.empty:
-                                sub_match = df_sub_all[(df_sub_all['スケジュールナンバー'] == s_n_int) & (df_sub_all['サブスケジュールナンバー'] == sub_n_int)]
+                                sub_match = df_sub_all[(df_sub_all['トラベルナンバー'] == travel_id) & (df_sub_all['スケジュールナンバー'] == s_n_int) & (df_sub_all['サブスケジュールナンバー'] == sub_n_int)]
                                 if not sub_match.empty:
                                     title = sub_match.iloc[0].get('サブスケジュールタイトル', 'タイトルなし')
                                     start_time = str(sub_match.iloc[0].get('サブスケジュール開始時間', '99:99'))
@@ -447,7 +419,7 @@ def render_timeline():
                         try:
                             s_n_int = int(float(s_num))
                             if not df_sched_all.empty:
-                                sched_match = df_sched_all[df_sched_all['スケジュールナンバー'] == s_n_int]
+                                sched_match = df_sched_all[(df_sched_all['トラベルナンバー'] == travel_id) & (df_sched_all['スケジュールナンバー'] == s_n_int)]
                                 if not sched_match.empty:
                                     title = sched_match.iloc[0].get('スケジュールタイトル', 'タイトルなし')
                                     start_time = str(sched_match.iloc[0].get('スケジュール開始時間', '99:99'))
@@ -490,10 +462,8 @@ def render_timeline():
                 with col_a:
                     st.write(f"{item['amount']:,.0f}円")
 
-    # 共有モード時は新規スケジュール作成ボタンを隠す
-    if not st.session_state.is_shared_view:
-        if st.button("➕ 新規スケジュール登録", use_container_width=True, type="primary"):
-            navigate_to('create_schedule')
+    if st.button("➕ 新規スケジュール登録", use_container_width=True, type="primary"):
+        navigate_to('create_schedule')
 
     offset_list = []
     
@@ -690,10 +660,7 @@ def render_timeline():
             time_str = f"{start.strftime('%H:%M')} - {end.strftime('%H:%M')}"
             
             sched_id = row['スケジュールナンバー']
-            if st.session_state.is_shared_view:
-                href = f"?detail_id={sched_id}&type=main&travel_id={travel_id}&view_travel={travel_id}"
-            else:
-                href = f"?detail_id={sched_id}&type=main&travel_id={travel_id}"
+            href = f"?detail_id={sched_id}&type=main&travel_id={travel_id}"
             
             html_content += f'<div id="sched_{sched_id}" class="schedule-block cat-{cat}" style="top: {top}px; height: {height}px;">'
             html_content += f'<a href="{href}" target="_self">'
@@ -725,10 +692,7 @@ def render_timeline():
                     s_time_str = f"{s_start.strftime('%H:%M')}-{s_end.strftime('%H:%M')}"
                     
                     sub_id = sub_row.get('サブスケジュールナンバー', sub_index)
-                    if st.session_state.is_shared_view:
-                        s_href = f"?detail_id={sub_id}&type=sub&travel_id={travel_id}&parent_sched={sched_id}&view_travel={travel_id}"
-                    else:
-                        s_href = f"?detail_id={sub_id}&type=sub&travel_id={travel_id}&parent_sched={sched_id}"
+                    s_href = f"?detail_id={sub_id}&type=sub&travel_id={travel_id}&parent_sched={sched_id}"
                     
                     html_content += f'<div id="sub_{sub_id}" class="sub-schedule-block cat-{s_cat}" style="top: {sub_top_rel}px; height: {sub_height}px;">'
                     html_content += f'<a href="{s_href}" target="_self">'
@@ -850,43 +814,35 @@ def render_schedule_detail():
         st.session_state.current_travel_num = travel_num
         st.session_state.current_sched_num = row.get('スケジュールナンバー')
 
-        # 共有モード時は編集・金額登録・サブ登録などのボタンを非表示
-        if st.session_state.is_shared_view:
-            if st.button("← タイムラインへ戻る", use_container_width=True):
-                st.session_state.detail_id = None
-                prefix = "sched" if detail_type == 'main' else "sub"
-                st.session_state.scroll_target = f"{prefix}_{detail_id}"
-                navigate_to('timeline')
+        if detail_type == 'main':
+            col_b1, col_b2, col_b3, col_b4 = st.columns(4)
+            with col_b1:
+                if st.button("← 戻る", use_container_width=True):
+                    st.session_state.detail_id = None
+                    navigate_to('timeline')
+            with col_b2:
+                if st.button("編集", use_container_width=True):
+                    navigate_to('edit_schedule')
+            with col_b3:
+                if st.button("金額登録", use_container_width=True):
+                    navigate_to('register_money')
+            with col_b4:
+                if st.button("サブ登録", use_container_width=True, type="primary"):
+                    navigate_to('create_sub_schedule')
         else:
-            if detail_type == 'main':
-                col_b1, col_b2, col_b3, col_b4 = st.columns(4)
-                with col_b1:
-                    if st.button("← 戻る", use_container_width=True):
-                        st.session_state.detail_id = None
-                        navigate_to('timeline')
-                with col_b2:
-                    if st.button("編集", use_container_width=True):
-                        navigate_to('edit_schedule')
-                with col_b3:
-                    if st.button("金額登録", use_container_width=True):
-                        navigate_to('register_money')
-                with col_b4:
-                    if st.button("サブ登録", use_container_width=True, type="primary"):
-                        navigate_to('create_sub_schedule')
-            else:
-                col_back, col_edit, col_money = st.columns(3)
-                with col_back:
-                    if st.button("← タイムラインへ戻る", use_container_width=True):
-                        st.session_state.detail_id = None
-                        prefix = "sched" if detail_type == 'main' else "sub"
-                        st.session_state.scroll_target = f"{prefix}_{detail_id}"
-                        navigate_to('timeline')
-                with col_edit:
-                    if st.button("編集", use_container_width=True):
-                        navigate_to('edit_schedule')
-                with col_money:
-                    if st.button("金額を登録", use_container_width=True):
-                        navigate_to('register_money')
+            col_back, col_edit, col_money = st.columns(3)
+            with col_back:
+                if st.button("← タイムラインへ戻る", use_container_width=True):
+                    st.session_state.detail_id = None
+                    prefix = "sched" if detail_type == 'main' else "sub"
+                    st.session_state.scroll_target = f"{prefix}_{detail_id}"
+                    navigate_to('timeline')
+            with col_edit:
+                if st.button("編集", use_container_width=True):
+                    navigate_to('edit_schedule')
+            with col_money:
+                if st.button("金額を登録", use_container_width=True):
+                    navigate_to('register_money')
 
         summary = row.get('概要', '（登録されていません）')
         raw_url = str(row.get('URL', ''))
@@ -988,9 +944,6 @@ def render_schedule_detail():
             navigate_to('timeline')
 
 def render_edit_schedule():
-    if st.session_state.is_shared_view:
-        st.error("権限がありません。")
-        return
     st.title("スケジュール編集")
     
     if st.button("登録せずに戻る"):
@@ -1151,9 +1104,6 @@ def render_edit_schedule():
         st.error(f"データの処理に失敗しました: {e}")
 
 def render_register_money():
-    if st.session_state.is_shared_view:
-        st.error("権限がありません。")
-        return
     st.title("金額登録")
     
     if st.button("← 詳細へ戻る"):
@@ -1260,9 +1210,6 @@ def render_register_money():
             st.error(f"金額の保存に失敗しました: {e}")
 
 def render_create_schedule():
-    if st.session_state.is_shared_view:
-        st.error("権限がありません。")
-        return
     st.title("スケジュール新規登録")
     
     if st.button("登録せずに戻る"):
@@ -1391,9 +1338,6 @@ def render_create_schedule():
             st.error(f"保存に失敗しました: {e}")
 
 def render_create_sub_schedule():
-    if st.session_state.is_shared_view:
-        st.error("権限がありません。")
-        return
     st.title("サブスケジュール新規登録")
     
     if st.button("登録せずに戻る"):
@@ -1546,9 +1490,6 @@ def render_create_sub_schedule():
             st.error(f"保存に失敗しました: {e}")
 
 def render_register_member():
-    if st.session_state.is_shared_view:
-        st.error("権限がありません。")
-        return
     st.title("メンバー登録")
     
     if st.button("← 日一覧へ戻る"):
@@ -1627,29 +1568,13 @@ if __name__ == "__main__":
         subprocess.run([sys.executable, "-m", "streamlit", "run", script_path])
         sys.exit(0)
 
-params = dict(st.query_params)
-
-view_travel = params.get("view_travel")
-if view_travel:
-    try:
-        st.session_state.is_shared_view = True
-        st.session_state.selected_travel_id = int(view_travel)
-    except (TypeError, ValueError):
-        pass
-
-if params.get("detail_id"):
-    try:
-        st.session_state.detail_id = params.get("detail_id")
-        st.session_state.detail_type = params.get("type", "main")
-        st.session_state.detail_travel_id = params.get("travel_id") or view_travel
-        st.session_state.detail_parent_sched = params.get("parent_sched")
-        st.session_state.current_page = "schedule_detail"
-    except Exception:
-        pass
-elif view_travel:
-    st.session_state.current_page = "day_list"
-
-st.query_params.clear()
+if "detail_id" in st.query_params:
+    st.session_state.detail_id = st.query_params["detail_id"]
+    st.session_state.detail_type = st.query_params.get("type", "main")
+    st.session_state.detail_travel_id = st.query_params.get("travel_id", None)
+    st.session_state.detail_parent_sched = st.query_params.get("parent_sched", None)
+    st.session_state.current_page = 'schedule_detail'
+    st.query_params.clear()
 
 if st.session_state.current_page == 'start':
     render_start()
