@@ -636,34 +636,54 @@ def render_timeline():
             
             html_content += '</div>'
 
-    occupied_intervals.sort()
-    merged = []
-    if occupied_intervals:
-        c_start, c_end = occupied_intervals[0]
-        for s, e in occupied_intervals[1:]:
+    time_intervals = []
+    if not df_sched.empty:
+        for _, row in df_sched.iterrows():
+            start = pd.to_datetime(row['スケジュール開始時間'])
+            end = pd.to_datetime(row['スケジュール終了時間'])
+            start_clip = max(start, day_start)
+            end_clip = min(end, day_end)
+            s_min = start_clip.hour * 60 + start_clip.minute
+            e_min = end_clip.hour * 60 + end_clip.minute
+            orig_h = max(0, e_min - s_min)
+            if orig_h == 0:
+                e_min += 1
+            draw_h = max(orig_h, 15)
+            effective_end = s_min + draw_h
+            time_intervals.append((s_min, effective_end))
+
+    time_intervals.sort(key=lambda x: x[0])
+    merged_time = []
+    if time_intervals:
+        c_start, c_end = time_intervals[0]
+        for s, e in time_intervals[1:]:
             if s <= c_end:
                 c_end = max(c_end, e)
             else:
-                merged.append((c_start, c_end))
+                merged_time.append((c_start, c_end))
                 c_start, c_end = s, e
-        merged.append((c_start, c_end))
-        
-        last_end = get_adjusted_top(0)
-        day_end_pos = get_adjusted_top(1440)
-        
-        for s, e in merged:
-            if s - last_end >= 60: 
-                empty_vw = s - last_end
-                empty_min = int(empty_vw / 0.1)
-                html_content += f'<div class="empty-slot" style="top: {last_end}vw; height: {empty_vw}vw;">空き時間 ({empty_min}分)</div>'
-            last_end = e
-        if day_end_pos - last_end >= 60:
-            empty_vw = day_end_pos - last_end
-            empty_min = int(empty_vw / 0.1)
-            html_content += f'<div class="empty-slot" style="top: {last_end}vw; height: {empty_vw}vw;">空き時間 ({empty_min}分)</div>'
+        merged_time.append((c_start, c_end))
+
+        current_time = 0
+        for s, e in merged_time:
+            empty_min = s - current_time
+            if empty_min >= 60:
+                top_pos = get_adjusted_top(current_time)
+                empty_vw = empty_min * 0.5
+                html_content += f'<div class="empty-slot" style="top: {top_pos}vw; height: {empty_vw}vw;">空き時間 ({empty_min}分)</div>'
+            current_time = max(current_time, e)
+
+        # 最後のスケジュールから24時(1440分)までの空き
+        empty_min = 1440 - current_time
+        if empty_min >= 60:
+            top_pos = get_adjusted_top(current_time)
+            empty_vw = empty_min * 0.5
+            html_content += f'<div class="empty-slot" style="top: {top_pos}vw; height: {empty_vw}vw;">空き時間 ({empty_min}分)</div>'
     else:
-        total_vw = get_adjusted_top(1440) - get_adjusted_top(0)
-        html_content += f'<div class="empty-slot" style="top: 0vw; height: {total_vw}vw;">空き時間 (24時間)</div>'
+        empty_min = 1440
+        top_pos = get_adjusted_top(0)
+        empty_vw = empty_min * 0.5
+        html_content += f'<div class="empty-slot" style="top: {top_pos}vw; height: {empty_vw}vw;">空き時間 ({empty_min}分)</div>'
 
     html_content += '</div>'
     st.markdown(html_content, unsafe_allow_html=True)
