@@ -481,8 +481,8 @@ def render_timeline():
             
             orig_h = max(0, e_min - s_min)
             draw_h = orig_h
-            if draw_h < 10:
-                draw_h = 15
+            if draw_h < 20:
+                draw_h = 20
                 
             delta_h = draw_h - orig_h
             extra_px = delta_h * 2
@@ -554,6 +554,7 @@ def render_timeline():
             border-radius: 5px;
             padding: 4px 8px;
             font-size: 14px;
+            line-height: 1;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
             word-break: break-all;
             white-space: normal;
@@ -575,6 +576,7 @@ def render_timeline():
             border-radius: 4px;
             padding: 2px 6px;
             font-size: 12px;
+            line-height: 1;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             word-break: break-all;
             white-space: normal;
@@ -617,10 +619,12 @@ def render_timeline():
     with col_prev:
         if has_prev and st.button(f"← {prev_date.strftime('%m/%d')} に移動", use_container_width=True):
             st.session_state.selected_date = prev_date
+            st.session_state.scroll_target = "time-24"
             st.rerun()
     with col_next:
         if has_next and st.button(f"{next_date.strftime('%m/%d')} に移動 →", use_container_width=True):
             st.session_state.selected_date = next_date
+            st.session_state.scroll_target = "time-0"
             st.rerun()
 
     html_content = '<div class="timeline-container">'
@@ -628,8 +632,8 @@ def render_timeline():
     for h in range(25):
         m = h * 60
         top = get_adjusted_top(m)
-        html_content += f'<div class="time-label" style="top: {top-8}px;">{h}:00</div>'
-        html_content += f'<div class="time-grid-line" style="top: {top}px;"></div>'
+        html_content += f'<div id="time-{h}" class="time-label" style="top: {top-0.8}vw;">{h}:00</div>'
+        html_content += f'<div class="time-grid-line" style="top: {top}vw;"></div>'
 
     occupied_intervals = [] 
 
@@ -680,8 +684,8 @@ def render_timeline():
                     sub_e_min = s_end_clip.hour * 60 + s_end_clip.minute
                     sub_orig_h = max(0, sub_e_min - sub_s_min)
                     sub_draw_h = sub_orig_h
-                    if sub_draw_h < 10:
-                        sub_draw_h = 15
+                    if sub_draw_h < 20:
+                        sub_draw_h = 20
                         
                     sub_top_abs = get_adjusted_top(sub_s_min)
                     sub_bottom_abs = get_adjusted_top(sub_s_min + sub_draw_h)
@@ -757,10 +761,12 @@ def render_timeline():
     with col_prev2:
         if has_prev and st.button(f"← {prev_date.strftime('%m/%d')} に移動", key="prev_bottom", use_container_width=True):
             st.session_state.selected_date = prev_date
+            st.session_state.scroll_target = "time-24"
             st.rerun()
     with col_next2:
         if has_next and st.button(f"{next_date.strftime('%m/%d')} に移動 →", key="next_bottom", use_container_width=True):
             st.session_state.selected_date = next_date
+            st.session_state.scroll_target = "time-0"
             st.rerun()
 
 def render_schedule_detail():
