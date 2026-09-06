@@ -180,7 +180,7 @@ def render_day_list():
             st.warning("日程変更機能は未実装です")
             
     encoded_id = hex(int(travel_id) * 333)[2:]
-    view_url = f"https://travel-app-9miv6xmrh5dwzrjzvqyb2a.streamlit.app/?travel_id={encoded_id}"
+    view_url = f"https://travel-app-qfeqhehv3hb74htxbpvnw8.streamlit.app/?travel_id={encoded_id}"
     st.text_input("閲覧専用URL（コピーして共有してください）", value=view_url)
             
     # --- 旅行全体の金額集計処理 ---
@@ -480,6 +480,10 @@ def render_timeline():
             e_min = end_clip.hour * 60 + end_clip.minute
             
             orig_h = max(0, e_min - s_min)
+            if orig_h == 0:
+                e_min += 1
+                orig_h = 1
+                
             draw_h = orig_h
             if draw_h < 20:
                 draw_h = 20
@@ -503,9 +507,13 @@ def render_timeline():
             e_min = end_clip.hour * 60 + end_clip.minute
             
             orig_h = max(0, e_min - s_min)
+            if orig_h == 0:
+                e_min += 1
+                orig_h = 1
+                
             draw_h = orig_h
-            if draw_h < 10:
-                draw_h = 15
+            if draw_h < 20:
+                draw_h = 20
                 
             delta_h = draw_h - orig_h
             extra_px = delta_h * 2
@@ -539,6 +547,7 @@ def render_timeline():
             left: -45px;
             font-size: 12px;
             color: #6c757d;
+            top: calc(var(--target-top) * 1px);
         }}
         .time-grid-line {{
             position: absolute;
@@ -632,8 +641,8 @@ def render_timeline():
     for h in range(25):
         m = h * 60
         top = get_adjusted_top(m)
-        html_content += f'<div id="time-{h}" class="time-label" style="top: {top-0.8}vw;">{h}:00</div>'
-        html_content += f'<div class="time-grid-line" style="top: {top}vw;"></div>'
+        html_content += f'<div id="time-{h}" class="time-label" style="top: {top}px;">{h}:00</div>'
+        html_content += f'<div class="time-grid-line" style="top: {top}px;"></div>'
 
     occupied_intervals = [] 
 
@@ -649,12 +658,16 @@ def render_timeline():
             e_min = end_clip.hour * 60 + end_clip.minute
             
             orig_h = max(0, e_min - s_min)
+            if orig_h == 0:
+                e_min += 1
+                orig_h = 1
+                
             draw_h = orig_h
-            if draw_h < 10:
-                draw_h = 15
+            if draw_h < 20:
+                draw_h = 20
             
             top = get_adjusted_top(s_min)
-            bottom = get_adjusted_top(s_min + draw_h)
+            bottom = get_adjusted_top(e_min)
             height = bottom - top
             
             occupied_intervals.append((top, bottom))
@@ -682,13 +695,18 @@ def render_timeline():
                     
                     sub_s_min = s_start_clip.hour * 60 + s_start_clip.minute
                     sub_e_min = s_end_clip.hour * 60 + s_end_clip.minute
+                    
                     sub_orig_h = max(0, sub_e_min - sub_s_min)
+                    if sub_orig_h == 0:
+                        sub_e_min += 1
+                        sub_orig_h = 1
+                        
                     sub_draw_h = sub_orig_h
                     if sub_draw_h < 20:
                         sub_draw_h = 20
                         
                     sub_top_abs = get_adjusted_top(sub_s_min)
-                    sub_bottom_abs = get_adjusted_top(sub_s_min + sub_draw_h)
+                    sub_bottom_abs = get_adjusted_top(sub_e_min)
                     sub_top_rel = sub_top_abs - top
                     sub_height = sub_bottom_abs - sub_top_abs
                     
