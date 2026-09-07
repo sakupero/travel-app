@@ -73,6 +73,34 @@ def render_start():
     with col2:
         if st.button("既存の旅行 (年一覧へ)", use_container_width=True):
             navigate_to('year_list')
+            
+    df_travel = load_data('Travel')
+    if not df_travel.empty:
+        today = pd.Timestamp.now().date()
+        
+        df_travel['出発日_dt'] = pd.to_datetime(df_travel['出発日']).dt.date
+        df_travel['帰着日_dt'] = pd.to_datetime(df_travel['帰着日']).dt.date
+        
+        current_travels = df_travel[(df_travel['出発日_dt'] <= today) & (df_travel['帰着日_dt'] >= today)]
+        future_travels = df_travel[df_travel['出発日_dt'] > today]
+        
+        if not current_travels.empty or not future_travels.empty:
+            st.markdown("---")
+            col_curr, col_next = st.columns(2)
+            
+            with col_curr:
+                if not current_travels.empty:
+                    target_curr = current_travels.sort_values('出発日_dt').iloc[0]
+                    if st.button(f"現在の日程: {target_curr['タイトル']}", use_container_width=True, type="primary"):
+                        st.session_state.selected_travel_id = int(target_curr['トラベルナンバー'])
+                        navigate_to('day_list')
+            
+            with col_next:
+                if not future_travels.empty:
+                    target_next = future_travels.sort_values('出発日_dt').iloc[0]
+                    if st.button(f"次の日程: {target_next['タイトル']}", use_container_width=True):
+                        st.session_state.selected_travel_id = int(target_next['トラベルナンバー'])
+                        navigate_to('day_list')
 
 def render_register_travel():
     st.title("旅行登録")
