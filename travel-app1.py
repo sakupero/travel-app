@@ -5,6 +5,9 @@ from google.oauth2.service_account import Credentials
 import sys
 import os
 import subprocess
+import io
+from PIL import Image, ImageDraw, ImageFont
+import streamlit.components.v1 as components
 
 # ==========================================
 # 初期設定
@@ -209,9 +212,10 @@ def render_day_list():
             
     encoded_id = hex(int(travel_id) * 333)[2:]
     view_url = f"https://travel-app-qfeqhehv3hb74htxbpvnw8.streamlit.app/?travel_id={encoded_id}"
-    st.text_input("閲覧専用URL（コピーして共有してください）", value=view_url)
-            
-    # --- 旅行全体の金額集計処理 ---
+    
+    st.text("閲覧専用URL（コピーして共有してください）")
+    st.code(view_url, language=None)
+        
     df_money = load_data('Money')
     df_sched = load_data('Schedule')
     df_sub = load_data('Sub_Schedule')
@@ -479,6 +483,29 @@ def render_timeline():
     if st.button("← 日一覧へ戻る"):
         navigate_to('day_list')
         
+    date_str = st.session_state.selected_date.strftime('%Y%m%d')
+    components.html(f"""
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <button onclick="downloadTimeline()" style="width: 100%; padding: 10px; background-color: #f0f2f6; color: #31333F; border: 1px solid #c4c4c4; border-radius: 5px; cursor: pointer; font-size: 16px;">
+            📸 タイムラインを画像として保存
+        </button>
+        <script>
+            function downloadTimeline() {{
+                const target = window.parent.document.getElementById('timeline-capture-area');
+                if (target) {{
+                    html2canvas(target, {{ backgroundColor: "#fcfcfc" }}).then(canvas => {{
+                        const link = document.createElement('a');
+                        link.download = 'timeline_{date_str}.png';
+                        link.href = canvas.toDataURL();
+                        link.click();
+                    }});
+                }} else {{
+                    alert('タイムラインが見つかりません。');
+                }}
+            }}
+        </script>
+    """, height=70)
+        
     st.info(f"💰 この日の合計金額: {daily_total:,.0f}円")
     
     if daily_total > 0 and daily_details:
@@ -664,7 +691,7 @@ def render_timeline():
             st.session_state.scroll_target = "time-0"
             st.rerun()
 
-    html_content = '<div class="timeline-container">'
+    html_content = '<div id="timeline-capture-area" class="timeline-container">'
     
     for h in range(25):
         m = h * 60
